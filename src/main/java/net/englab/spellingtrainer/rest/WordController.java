@@ -43,7 +43,7 @@ public class WordController {
      * @param id the ID of the word that needs to be removed
      */
     @DeleteMapping("/{id}")
-    public String remove(@PathVariable Long id) {
+    public String remove(@PathVariable Integer id) {
         try {
             wordService.delete(id);
         } catch (WordNotFoundException e) {
@@ -61,7 +61,7 @@ public class WordController {
     @GetMapping
     public List<Word> find(String prefix) {
         if (prefix.length() < 2) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "the prefix must contain at least 2 characters");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The prefix must contain at least 2 characters");
         }
         return wordService.findByPrefix(prefix);
     }

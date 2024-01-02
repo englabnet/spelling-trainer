@@ -10,7 +10,7 @@ import java.util.List;
  * from the database. It extends JpaRepository for standard CRUD operations
  * on word entities.
  */
-public interface WordRepository extends JpaRepository<Word, Long> {
+public interface WordRepository extends JpaRepository<Word, Integer> {
 
     /**
      * Finds a list of word entities by the specified words.

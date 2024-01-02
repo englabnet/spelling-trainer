@@ -47,7 +47,7 @@ public class WordStorage {
      * @throws WordNotFoundException if the word has not been found
      */
     @Transactional
-    public void delete(Long id) {
+    public void delete(Integer id) {
         wordRepository.findById(id)
                 .ifPresentOrElse(word -> wordRepository.deleteById(id),
                         () -> {

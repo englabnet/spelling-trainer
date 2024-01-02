@@ -23,7 +23,7 @@ public class Word {
      */
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+    private Integer id;
 
     /**
      * This string holds the word itself.
