@@ -1,9 +1,9 @@
 package net.englab.spellingtrainer.models.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.Set;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -29,4 +29,10 @@ public class Word {
      * This string holds the word itself.
      */
     private String text;
+
+    /**
+     * A set of pronunciation tracks.
+     */
+    @OneToMany(mappedBy = "wordId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<PronunciationTrack> pronunciationTracks;
 }

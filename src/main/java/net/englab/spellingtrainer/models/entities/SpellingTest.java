@@ -6,6 +6,9 @@ import lombok.*;
 import java.time.Instant;
 import java.util.Set;
 
+/**
+ * Represents a spelling test entity stored in the database.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

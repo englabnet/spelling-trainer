@@ -9,6 +9,7 @@ import net.englab.spellingtrainer.repositories.WordRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A word storage service that provides basic operations
@@ -35,7 +36,7 @@ public class WordStorage {
             );
         }
         List<Word> list = words.stream()
-                .map(s -> new Word(null, s))
+                .map(s -> new Word(null, s, Set.of()))
                 .toList();
         wordRepository.saveAll(list);
     }
