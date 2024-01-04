@@ -1,6 +1,7 @@
 package net.englab.spellingtrainer.rest;
 
 import lombok.RequiredArgsConstructor;
+import net.englab.spellingtrainer.models.TestStep;
 import net.englab.spellingtrainer.models.entities.SpellingTest;
 import net.englab.spellingtrainer.services.SpellingTestService;
 import org.springframework.http.HttpStatus;
@@ -37,8 +38,19 @@ public class SpellingTestController {
      * @return the test data
      */
     @GetMapping("/{testId}")
-    public SpellingTest find(@PathVariable String testId) {
+    public SpellingTest get(@PathVariable String testId) {
         return testService.find(testId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "The test has not be found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "The test has not been found"));
+    }
+
+    @GetMapping("/{testId}/{step}")
+    public TestStep getStep(@PathVariable String testId, @PathVariable int step) {
+        return testService.findStep(testId, step)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "The step has not been found"));
+    }
+
+    @GetMapping("/{testId}/{step}/check")
+    public boolean checkAnswer(@PathVariable String testId, @PathVariable int step, String answer) {
+        return testService.checkAnswer(testId, step, answer);
     }
 }

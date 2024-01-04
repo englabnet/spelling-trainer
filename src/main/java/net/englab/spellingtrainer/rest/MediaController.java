@@ -11,7 +11,7 @@ import java.nio.file.Path;
  * A REST controller that is used to retrieve media files.
  */
 @RestController
-@RequestMapping(path = "/api/media")
+@RequestMapping(path = "/api/v1/media")
 public class MediaController {
 
     @Value("${spelling-trainer.pronunciation-dir}")

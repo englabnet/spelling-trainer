@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.englab.spellingtrainer.models.EnglishVariety;
+import net.englab.spellingtrainer.models.TestStep;
 import net.englab.spellingtrainer.models.entities.PronunciationTrack;
 import net.englab.spellingtrainer.models.entities.SpellingTest;
 import net.englab.spellingtrainer.models.entities.Word;
@@ -41,7 +42,7 @@ public class SpellingTestService {
         synthesizePronunciationTracks(words);
 
         String id = generateHash(wordIds);
-        SpellingTest spellingTest = new SpellingTest(id, new HashSet<>(words), Instant.now());
+        SpellingTest spellingTest = new SpellingTest(id, new ArrayList<>(words), Instant.now());
         testRepository.save(spellingTest);
         return id;
     }
@@ -81,10 +82,45 @@ public class SpellingTestService {
     /**
      * Finds a test by its ID.
      *
-     * @param id the ID of the test that needs to be found
+     * @param testId the ID of the test that needs to be found
      * @return an Optional containing the found spelling test
      */
-    public Optional<SpellingTest> find(String id) {
-        return testRepository.findById(id);
+    public Optional<SpellingTest> find(String testId) {
+        return testRepository.findById(testId);
+    }
+
+    /**
+     * Finds a specified step of the test.
+     *
+     * @param testId    the ID of the test
+     * @param step      the number of the step
+     * @return an Optional containing the found test step
+     */
+    public Optional<TestStep> findStep(String testId, int step) {
+        return testRepository.findById(testId)
+                .map(SpellingTest::getWords)
+                .filter(words -> words.size() > step)
+                .map(words -> {
+                    Word currentWord = words.get(step);
+                    return new TestStep(step, words.size(), currentWord.getId(), currentWord.getPronunciationTracks());
+                });
+    }
+
+    /**
+     * Check user's answer.
+     *
+     * @param testId    the ID of the test
+     * @param step      the number of the step
+     * @param answer    the answer of the user
+     * @return true if the answer correct and false otherwise
+     */
+    public boolean checkAnswer(String testId, int step, String answer) {
+        if (answer == null) return false;
+        return testRepository.findById(testId)
+                .map(SpellingTest::getWords)
+                .filter(words -> words.size() > step)
+                .map(words -> words.get(step).getText().trim().toLowerCase())
+                .stream()
+                .anyMatch(word -> Objects.equals(word, answer.trim().toLowerCase()));
     }
 }

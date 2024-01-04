@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Represents a spelling test entity stored in the database.
@@ -26,7 +26,8 @@ public class SpellingTest {
      * A set of words that are in the test.
      */
     @ManyToMany
-    private Set<Word> words;
+    @OrderBy("text ASC")
+    private List<Word> words;
 
     /**
      * The time when the test was created.
