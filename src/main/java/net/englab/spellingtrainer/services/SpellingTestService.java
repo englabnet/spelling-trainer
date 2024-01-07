@@ -107,7 +107,7 @@ public class SpellingTestService {
     }
 
     /**
-     * Check user's answer.
+     * Checks user's answer.
      *
      * @param testId    the ID of the test
      * @param step      the number of the step
