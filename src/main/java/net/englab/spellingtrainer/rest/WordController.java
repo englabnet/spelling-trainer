@@ -53,16 +53,28 @@ public class WordController {
     }
 
     /**
-     * Finds words by the given prefix.
+     * Finds word suggestions by the given prefix.
      *
-     * @param prefix the prefix of the words
+     * @param prefix the prefix
      * @return a list of the words that have the specified prefix
      */
-    @GetMapping
-    public List<Word> find(String prefix) {
+    @GetMapping("/suggestions")
+    public List<Word> getSuggestions(String prefix) {
         if (prefix.length() < 2) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The prefix must contain at least 2 characters");
         }
         return wordService.findByPrefix(prefix);
+    }
+
+    /**
+     * Finds the word by the given text.
+     *
+     * @param word the word
+     * @return a list of the words that have the specified prefix
+     */
+    @GetMapping
+    public Word find(String word) {
+        return wordService.find(word)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "The word has not been found"));
     }
 }

@@ -9,6 +9,7 @@ import net.englab.spellingtrainer.repositories.WordRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -20,6 +21,16 @@ import java.util.Set;
 public class WordStorage {
 
     private final WordRepository wordRepository;
+
+    /**
+     * Finds a word by the given text.
+     *
+     * @param word the word
+     * @return a list of the words that have the specified prefix
+     */
+    public Optional<Word> find(String word) {
+        return wordRepository.findByText(word);
+    }
 
     /**
      * Saves a list of words to the storage.
@@ -63,6 +74,6 @@ public class WordStorage {
      * @return a list of the words that have the specified prefix
      */
     public List<Word> findByPrefix(String prefix) {
-        return wordRepository.findByTextStartsWith(prefix);
+        return wordRepository.findByPrefix(prefix);
     }
 }
