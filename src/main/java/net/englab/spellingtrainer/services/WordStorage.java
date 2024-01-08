@@ -30,7 +30,7 @@ public class WordStorage {
      * @return a list of the words that have the specified prefix
      */
     public Optional<Word> find(String word) {
-        if (StringUtils.hasText(word)) {
+        if (!StringUtils.hasText(word)) {
             return Optional.empty();
         }
         return wordRepository.findByText(word.trim().toLowerCase());
@@ -78,6 +78,6 @@ public class WordStorage {
      * @return a list of the words that have the specified prefix
      */
     public List<Word> findByPrefix(String prefix) {
-        return wordRepository.findByPrefix(prefix);
+        return wordRepository.findByPrefix(prefix.trim().toLowerCase());
     }
 }
