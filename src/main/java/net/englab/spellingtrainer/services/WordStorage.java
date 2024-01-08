@@ -7,6 +7,7 @@ import net.englab.spellingtrainer.exceptions.WordNotFoundException;
 import net.englab.spellingtrainer.models.entities.Word;
 import net.englab.spellingtrainer.repositories.WordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +30,10 @@ public class WordStorage {
      * @return a list of the words that have the specified prefix
      */
     public Optional<Word> find(String word) {
-        return wordRepository.findByText(word);
+        if (StringUtils.hasText(word)) {
+            return Optional.empty();
+        }
+        return wordRepository.findByText(word.trim().toLowerCase());
     }
 
     /**
