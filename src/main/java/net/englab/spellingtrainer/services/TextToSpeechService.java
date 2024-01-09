@@ -24,6 +24,7 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class TextToSpeechService {
+    private static final int MAX_TRIES = 3;
     private static final Map<EnglishVariety, List<String>> VOICES = Map.of(
             EnglishVariety.UK, List.of("en-GB-Standard-A", "en-GB-Standard-B"),
             EnglishVariety.US, List.of("en-US-Standard-G", "en-US-Standard-I")
@@ -63,7 +64,7 @@ public class TextToSpeechService {
                 .setAudioEncoding(AudioEncoding.MP3)
                 .build();
 
-        SynthesizeSpeechResponse response = textToSpeechClient.synthesizeSpeech(input, voice, audioConfig);
+        SynthesizeSpeechResponse response = synthesizeSpeech(input, voice, audioConfig);
         ByteString audioContents = response.getAudioContent();
 
         Files.createDirectories(Path.of(outputDir));
@@ -75,6 +76,20 @@ public class TextToSpeechService {
         }
 
         return filepath;
+    }
+
+    private SynthesizeSpeechResponse synthesizeSpeech(SynthesisInput input, VoiceSelectionParams voice, AudioConfig audioConfig) {
+        int count = 0;
+        while (true) {
+            try {
+                return textToSpeechClient.synthesizeSpeech(input, voice, audioConfig);
+            } catch (Exception e) {
+                count++;
+                if (count >= MAX_TRIES) {
+                    throw e;
+                }
+            }
+        }
     }
 
     private String pickVoice(EnglishVariety englishVariety) {

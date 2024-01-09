@@ -14,14 +14,15 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A word storage service that provides basic operations
+ * A word service that provides basic operations
  * such as saving, deleting, and searching words.
  */
 @Service
 @RequiredArgsConstructor
-public class WordStorage {
+public class WordService {
 
     private final WordRepository wordRepository;
+    private final PronunciationTrackLoader pronunciationTrackLoader;
 
     /**
      * Finds a word by the given text.
@@ -29,11 +30,26 @@ public class WordStorage {
      * @param word the word
      * @return a list of the words that have the specified prefix
      */
+    @Transactional
     public Optional<Word> find(String word) {
         if (!StringUtils.hasText(word)) {
             return Optional.empty();
         }
-        return wordRepository.findByText(word.trim().toLowerCase());
+
+        Optional<Word> wordOptional = wordRepository.findByText(word.trim().toLowerCase());
+        wordOptional.ifPresent(w -> pronunciationTrackLoader.loadPronunciationTracks(List.of(w)));
+
+        return wordOptional;
+    }
+
+    /**
+     * Finds all the words by the given IDs.
+     *
+     * @param wordIds a list of word IDs
+     * @return a list of found words
+     */
+    public List<Word> findAllById(List<Integer> wordIds) {
+        return wordRepository.findAllById(wordIds);
     }
 
     /**

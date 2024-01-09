@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import net.englab.spellingtrainer.exceptions.WordAlreadyExistsException;
 import net.englab.spellingtrainer.exceptions.WordNotFoundException;
 import net.englab.spellingtrainer.models.entities.Word;
-import net.englab.spellingtrainer.services.WordStorage;
+import net.englab.spellingtrainer.services.WordService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/api/v1/words")
 public class WordController {
 
-    private final WordStorage wordService;
+    private final WordService wordService;
 
     /**
      * Adds new words to the system.

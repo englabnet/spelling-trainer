@@ -3,13 +3,10 @@ package net.englab.spellingtrainer.services;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import net.englab.spellingtrainer.models.EnglishVariety;
 import net.englab.spellingtrainer.models.TestStep;
-import net.englab.spellingtrainer.models.entities.PronunciationTrack;
 import net.englab.spellingtrainer.models.entities.SpellingTest;
 import net.englab.spellingtrainer.models.entities.Word;
 import net.englab.spellingtrainer.repositories.SpellingTestRepository;
-import net.englab.spellingtrainer.repositories.WordRepository;
 import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
@@ -26,9 +23,9 @@ public class SpellingTestService {
 
     public static final String HASHING_ALGORITHM = "MD5";
 
-    private final WordRepository wordRepository;
+    private final WordService wordService;
+    private final PronunciationTrackLoader pronunciationTrackLoader;
     private final SpellingTestRepository testRepository;
-    private final TextToSpeechService textToSpeechService;
 
     /**
      * Generates a new spelling test with the given list of words.
@@ -38,29 +35,13 @@ public class SpellingTestService {
      */
     @Transactional
     public String generate(List<Integer> wordIds) {
-        List<Word> words = wordRepository.findAllById(wordIds);
-        synthesizePronunciationTracks(words);
+        List<Word> words = wordService.findAllById(wordIds);
+        pronunciationTrackLoader.loadPronunciationTracks(words);
 
         String id = generateHash(wordIds);
         SpellingTest spellingTest = new SpellingTest(id, new ArrayList<>(words), Instant.now());
         testRepository.save(spellingTest);
         return id;
-    }
-
-    private void synthesizePronunciationTracks(List<Word> words) {
-        List<Word> wordsWithoutAudio = words.stream()
-                .filter(word -> word.getPronunciationTracks().isEmpty())
-                .toList();
-
-        for (Word word : wordsWithoutAudio) {
-            Set<PronunciationTrack> pronunciationTracks = word.getPronunciationTracks();
-
-            String ukFile = textToSpeechService.synthesize(word.getText(), EnglishVariety.UK);
-            pronunciationTracks.add(new PronunciationTrack(word.getId(), EnglishVariety.UK, ukFile));
-            String usFile = textToSpeechService.synthesize(word.getText(), EnglishVariety.US);
-            pronunciationTracks.add(new PronunciationTrack(word.getId(), EnglishVariety.US, usFile));
-        }
-        wordRepository.saveAll(wordsWithoutAudio);
     }
 
     @SneakyThrows
@@ -76,7 +57,7 @@ public class SpellingTestService {
         MessageDigest md = MessageDigest.getInstance(HASHING_ALGORITHM);
         byte[] hash = md.digest(idBuffer);
 
-        return Base64.getUrlEncoder().encodeToString(hash);
+        return Base64.getUrlEncoder().encodeToString(hash).substring(0, 23);
     }
 
     /**
