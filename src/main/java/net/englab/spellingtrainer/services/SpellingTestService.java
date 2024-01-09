@@ -36,7 +36,12 @@ public class SpellingTestService {
     @Transactional
     public String generate(List<Integer> wordIds) {
         List<Word> words = wordService.findAllById(wordIds);
-        pronunciationTrackLoader.loadPronunciationTracks(words);
+
+        List<Integer> wordsWithoutAudio = words.stream()
+                .filter(w -> w.getPronunciationTracks().isEmpty())
+                .map(Word::getId)
+                .toList();
+        pronunciationTrackLoader.loadPronunciationTracks(wordsWithoutAudio);
 
         String id = generateHash(wordIds);
         SpellingTest spellingTest = new SpellingTest(id, new ArrayList<>(words), Instant.now());
@@ -57,7 +62,7 @@ public class SpellingTestService {
         MessageDigest md = MessageDigest.getInstance(HASHING_ALGORITHM);
         byte[] hash = md.digest(idBuffer);
 
-        return Base64.getUrlEncoder().encodeToString(hash).substring(0, 23);
+        return Base64.getUrlEncoder().encodeToString(hash).substring(0, 22);
     }
 
     /**

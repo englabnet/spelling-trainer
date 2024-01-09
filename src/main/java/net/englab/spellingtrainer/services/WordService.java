@@ -37,7 +37,11 @@ public class WordService {
         }
 
         Optional<Word> wordOptional = wordRepository.findByText(word.trim().toLowerCase());
-        wordOptional.ifPresent(w -> pronunciationTrackLoader.loadPronunciationTracks(List.of(w)));
+        wordOptional.ifPresent(w -> {
+            if (w.getPronunciationTracks().isEmpty()) {
+                pronunciationTrackLoader.loadPronunciationTracks(List.of(w.getId()));
+            }
+        });
 
         return wordOptional;
     }
