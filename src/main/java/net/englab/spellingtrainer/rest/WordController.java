@@ -3,7 +3,7 @@ package net.englab.spellingtrainer.rest;
 import lombok.RequiredArgsConstructor;
 import net.englab.spellingtrainer.exceptions.WordAlreadyExistsException;
 import net.englab.spellingtrainer.exceptions.WordNotFoundException;
-import net.englab.spellingtrainer.models.entities.Word;
+import net.englab.spellingtrainer.models.dto.WordDto;
 import net.englab.spellingtrainer.services.WordService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -56,10 +56,10 @@ public class WordController {
      * Finds word suggestions by the given prefix.
      *
      * @param prefix the prefix
-     * @return a list of the words that have the specified prefix
+     * @return a list of words that have the specified prefix
      */
     @GetMapping("/suggestions")
-    public List<Word> getSuggestions(String prefix) {
+    public List<String> getSuggestions(String prefix) {
         if (prefix.length() < 2) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The prefix must contain at least 2 characters");
         }
@@ -73,8 +73,9 @@ public class WordController {
      * @return a list of the words that have the specified prefix
      */
     @GetMapping
-    public Word find(String word) {
+    public WordDto find(String word) {
         return wordService.find(word)
+                .map(w -> new WordDto(w.getId(), w.getText()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "The word has not been found"));
     }
 }

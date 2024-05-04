@@ -1,7 +1,7 @@
 package net.englab.spellingtrainer.repositories;
 
 import net.englab.spellingtrainer.models.entities.Word;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,6 +14,10 @@ import java.util.Optional;
  * on word entities.
  */
 public interface WordRepository extends JpaRepository<Word, Integer> {
+
+    @EntityGraph("word-with-pronunciation-tracks")
+    @Override
+    List<Word> findAllById(Iterable<Integer> ids);
 
     /**
      * Finds a word entity by the specified text.

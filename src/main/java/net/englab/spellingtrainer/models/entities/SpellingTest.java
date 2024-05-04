@@ -4,11 +4,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a spelling test entity stored in the database.
  */
+@NamedEntityGraph(
+        name = "spelling-test-with-words-and-pronunciation-tracks",
+        attributeNodes = @NamedAttributeNode(value = "words", subgraph = "word-with-pronunciation-tracks"),
+        subgraphs = @NamedSubgraph(name = "word-with-pronunciation-tracks", attributeNodes = @NamedAttributeNode("pronunciationTracks"))
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,7 +32,7 @@ public class SpellingTest {
      */
     @ManyToMany
     @OrderBy("text ASC")
-    private List<Word> words;
+    private Set<Word> words;
 
     /**
      * The time when the test was created.

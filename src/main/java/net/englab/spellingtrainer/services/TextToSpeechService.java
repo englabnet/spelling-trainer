@@ -72,7 +72,7 @@ public class TextToSpeechService {
         String filepath = outputDir + voiceName + "-" + text  + ".mp3";
         try (OutputStream out = new FileOutputStream(filepath)) {
             out.write(audioContents.toByteArray());
-            log.info("A new audio file has been created: " + filepath);
+            log.info("A new audio file has been created: {}", filepath);
         }
 
         return filepath;

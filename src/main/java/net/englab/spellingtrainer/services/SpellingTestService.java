@@ -1,6 +1,5 @@
 package net.englab.spellingtrainer.services;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.englab.spellingtrainer.models.TestStep;
@@ -8,6 +7,7 @@ import net.englab.spellingtrainer.models.entities.SpellingTest;
 import net.englab.spellingtrainer.models.entities.Word;
 import net.englab.spellingtrainer.repositories.SpellingTestRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -37,14 +37,19 @@ public class SpellingTestService {
     public String generate(List<Integer> wordIds) {
         List<Word> words = wordService.findAllById(wordIds);
 
-        List<Integer> wordsWithoutAudio = words.stream()
+        List<Word> wordsWithoutAudio = words.stream()
                 .filter(w -> w.getPronunciationTracks().isEmpty())
-                .map(Word::getId)
                 .toList();
-        pronunciationTrackLoader.loadPronunciationTracks(wordsWithoutAudio);
+        if (!wordsWithoutAudio.isEmpty()) {
+            // All the audio should be loaded at this point as it's generated in the background during
+            // the creation of a test. However, it's better to double-check and upload any missing files.
+            // We can't continue if some audio files aren't ready, so we block the thread until everything is loaded.
+            var tracks = pronunciationTrackLoader.loadPronunciationTracks(wordsWithoutAudio).join();
+            words.forEach(w -> w.getPronunciationTracks().addAll(tracks.get(w.getId())));
+        }
 
         String id = generateHash(wordIds);
-        SpellingTest spellingTest = new SpellingTest(id, new ArrayList<>(words), Instant.now());
+        SpellingTest spellingTest = new SpellingTest(id, new LinkedHashSet<>(words), Instant.now());
         testRepository.save(spellingTest);
         return id;
     }
@@ -71,6 +76,7 @@ public class SpellingTestService {
      * @param testId the ID of the test that needs to be found
      * @return an Optional containing the found spelling test
      */
+    @Transactional(readOnly = true)
     public Optional<SpellingTest> find(String testId) {
         return testRepository.findById(testId);
     }
@@ -82,14 +88,16 @@ public class SpellingTestService {
      * @param step      the number of the step
      * @return an Optional containing the found test step
      */
+    @Transactional(readOnly = true)
     public Optional<TestStep> findStep(String testId, int step) {
-        return testRepository.findById(testId)
-                .map(SpellingTest::getWords)
+        var result = testRepository.findById(testId);
+        return result.map(SpellingTest::getWords)
                 .filter(words -> words.size() > step)
-                .map(words -> {
-                    Word currentWord = words.get(step);
-                    return new TestStep(step, words.size(), currentWord.getId(), currentWord.getPronunciationTracks());
-                });
+                .flatMap(words -> words.stream()
+                            .skip(step)
+                            .findFirst()
+                            .map(word -> new TestStep(step, words.size(), word.getId(), word.getPronunciationTracks()))
+                );
     }
 
     /**
@@ -100,12 +108,13 @@ public class SpellingTestService {
      * @param answer    the answer of the user
      * @return true if the answer correct and false otherwise
      */
+    @Transactional(readOnly = true)
     public boolean checkAnswer(String testId, int step, String answer) {
         if (answer == null) return false;
         return testRepository.findById(testId)
                 .map(SpellingTest::getWords)
                 .filter(words -> words.size() > step)
-                .map(words -> words.get(step).getText().trim().toLowerCase())
+                .flatMap(words -> words.stream().skip(step).findFirst().map(word -> word.getText().trim().toLowerCase()))
                 .stream()
                 .anyMatch(word -> Objects.equals(word, answer.trim().toLowerCase()));
     }

@@ -1,12 +1,13 @@
 package net.englab.spellingtrainer.services;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.englab.spellingtrainer.exceptions.WordAlreadyExistsException;
 import net.englab.spellingtrainer.exceptions.WordNotFoundException;
 import net.englab.spellingtrainer.models.entities.Word;
 import net.englab.spellingtrainer.repositories.WordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class WordService {
 
     private final WordRepository wordRepository;
     private final PronunciationTrackLoader pronunciationTrackLoader;
+    private final TransactionTemplate transactionTemplate;
 
     /**
      * Finds a word by the given text.
@@ -30,7 +32,7 @@ public class WordService {
      * @param word the word
      * @return a list of the words that have the specified prefix
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<Word> find(String word) {
         if (!StringUtils.hasText(word)) {
             return Optional.empty();
@@ -39,7 +41,13 @@ public class WordService {
         Optional<Word> wordOptional = wordRepository.findByText(word.trim().toLowerCase());
         wordOptional.ifPresent(w -> {
             if (w.getPronunciationTracks().isEmpty()) {
-                pronunciationTrackLoader.loadPronunciationTracks(List.of(w.getId()));
+                pronunciationTrackLoader.loadPronunciationTracks(List.of(w))
+                        .thenApplyAsync(result -> transactionTemplate.execute(status -> {
+                            // the entity is detached here, so we can just simply set new pronunciation tracks
+                            w.setPronunciationTracks(result.get(w.getId()));
+                            wordRepository.save(w);
+                            return null;
+                        }));
             }
         });
 
@@ -95,9 +103,12 @@ public class WordService {
      * Finds words by the given prefix.
      *
      * @param prefix the prefix of the words
-     * @return a list of the words that have the specified prefix
+     * @return a list of words that have the specified prefix
      */
-    public List<Word> findByPrefix(String prefix) {
-        return wordRepository.findByPrefix(prefix.trim().toLowerCase());
+    @Transactional(readOnly = true)
+    public List<String> findByPrefix(String prefix) {
+        return wordRepository.findByPrefix(prefix.trim().toLowerCase()).stream()
+                .map(Word::getText)
+                .toList();
     }
 }

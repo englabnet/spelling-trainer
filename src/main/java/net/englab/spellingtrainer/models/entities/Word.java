@@ -10,11 +10,15 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 /**
  * Represents a word entity stored in the database.
  */
+@NamedEntityGraph(
+        name = "word-with-pronunciation-tracks",
+        attributeNodes = @NamedAttributeNode("pronunciationTracks")
+)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = "pronunciationTracks")
 @Entity
 public class Word {
 
