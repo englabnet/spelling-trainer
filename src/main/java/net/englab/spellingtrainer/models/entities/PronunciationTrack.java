@@ -14,12 +14,15 @@ import net.englab.spellingtrainer.models.EnglishVariety;
 @Entity
 public class PronunciationTrack {
 
+    /**
+     * The unique identifier of the pronunciation track.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**
-     * The variety of English which is a part of the composite key.
+     * The variety of English.
      */
     @Enumerated(value = EnumType.STRING)
     private EnglishVariety variety;
