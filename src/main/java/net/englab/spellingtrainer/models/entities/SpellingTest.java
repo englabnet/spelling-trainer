@@ -30,7 +30,12 @@ public class SpellingTest {
     /**
      * A set of words that are in the test.
      */
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinTable(
+            name = "spelling_test_word",
+            joinColumns = @JoinColumn(name = "spelling_test_id"),
+            inverseJoinColumns = @JoinColumn(name = "word_id")
+    )
     @OrderBy("text ASC")
     private Set<Word> words;
 

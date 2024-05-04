@@ -37,6 +37,7 @@ public class Word {
     /**
      * A set of pronunciation tracks.
      */
-    @OneToMany(mappedBy = "wordId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "word_id")
     private Set<PronunciationTrack> pronunciationTracks;
 }

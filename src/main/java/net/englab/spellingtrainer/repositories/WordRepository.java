@@ -25,6 +25,7 @@ public interface WordRepository extends JpaRepository<Word, Integer> {
      * @param word the word
      * @return an Optional containing the found word
      */
+    @EntityGraph("word-with-pronunciation-tracks")
     Optional<Word> findByText(String word);
 
     /**

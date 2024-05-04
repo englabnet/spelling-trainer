@@ -45,12 +45,12 @@ public class SpellingTestService {
             // the creation of a test. However, it's better to double-check and upload any missing files.
             // We can't continue if some audio files aren't ready, so we block the thread until everything is loaded.
             var tracks = pronunciationTrackLoader.loadPronunciationTracks(wordsWithoutAudio).join();
-            words.forEach(w -> w.getPronunciationTracks().addAll(tracks.get(w.getId())));
+            wordsWithoutAudio.forEach(w -> w.getPronunciationTracks().addAll(tracks.get(w.getId())));
         }
 
         String id = generateHash(wordIds);
         SpellingTest spellingTest = new SpellingTest(id, new LinkedHashSet<>(words), Instant.now());
-        testRepository.save(spellingTest);
+        testRepository.saveAndFlush(spellingTest);
         return id;
     }
 

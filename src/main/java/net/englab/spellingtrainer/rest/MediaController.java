@@ -24,7 +24,6 @@ public class MediaController {
      * @return an audio file
      */
     @GetMapping(value = "/pronunciations/{filename}", produces = "audio/mpeg")
-    @ResponseBody
     public byte[] getPronunciation(@PathVariable String filename) throws IOException {
         return Files.readAllBytes(Path.of(pronunciationDir + filename));
     }
