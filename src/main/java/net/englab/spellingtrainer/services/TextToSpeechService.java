@@ -6,13 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.englab.spellingtrainer.models.EnglishVariety;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -36,9 +31,7 @@ public class TextToSpeechService {
     private static final Random RANDOM = new Random();
 
     private final TextToSpeechClient textToSpeechClient;
-
-    @Value("${spelling-trainer.pronunciation-dir}")
-    private String outputDir;
+    private final MediaStorage mediaStorage;
 
     /**
      * Synthesizes an audio file. The file is saved to the file system
@@ -67,13 +60,9 @@ public class TextToSpeechService {
         SynthesizeSpeechResponse response = synthesizeSpeech(input, voice, audioConfig);
         ByteString audioContents = response.getAudioContent();
 
-        Files.createDirectories(Path.of(outputDir));
-
-        String filepath = outputDir + voiceName + "-" + text  + ".mp3";
-        try (OutputStream out = new FileOutputStream(filepath)) {
-            out.write(audioContents.toByteArray());
-            log.info("A new audio file has been created: {}", filepath);
-        }
+        String filename = voiceName + "-" + text  + ".mp3";
+        String filepath = mediaStorage.save(filename, audioContents.newInput(), audioContents.size());
+        log.info("A new audio file has been created: {}", filepath);
 
         return filepath;
     }
