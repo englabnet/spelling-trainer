@@ -4,6 +4,7 @@ import io.minio.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.englab.spellingtrainer.exceptions.MediaStorageException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -15,9 +16,11 @@ import java.io.InputStream;
 @Service
 @RequiredArgsConstructor
 public class MediaStorage {
-    private static final String PRONUNCIATIONS_BUCKET = "pronunciations";
 
     private final MinioClient minioClient;
+
+    @Value("${spelling-trainer.pronunciations-bucket}")
+    private String pronunciationsBucket;
 
     /**
      * Saves the given file to the media storage.
@@ -29,13 +32,13 @@ public class MediaStorage {
      */
     public String save(String filename, InputStream inputStream, long objectSize) {
         var args = PutObjectArgs.builder()
-                .bucket(PRONUNCIATIONS_BUCKET)
+                .bucket(pronunciationsBucket)
                 .object(filename)
                 .stream(inputStream, objectSize, -1)
                 .build();
         try {
             minioClient.putObject(args);
-            return "/" + PRONUNCIATIONS_BUCKET + "/" + filename;
+            return "/" + pronunciationsBucket + "/" + filename;
         } catch (Exception e) {
             throw new MediaStorageException("An exception occurred during saving a pronunciation track.", e);
         }
